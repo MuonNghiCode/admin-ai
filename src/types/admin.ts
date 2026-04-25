@@ -86,6 +86,7 @@ export interface SongItem {
   name: string;
   artist: string;
   audioUrl: string;
+  gcsPath?: string;
 }
 
 export interface SongUpsertRequest {
@@ -100,6 +101,8 @@ export interface StoryItem {
   id: string;
   name: string;
   contentType: string;
+  gcsPath: string;
+  audioUrl?: string;
   createdAt: string;
 }
 

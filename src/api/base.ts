@@ -14,14 +14,16 @@ class BaseApiService {
     protected api: AxiosInstance;
 
     private toApiResponse<T>(data: unknown): ApiResponse<T> {
-        if (
-            data &&
-            typeof data === "object" &&
-            "isSuccess" in data &&
-            "isFailure" in data &&
-            "value" in data
-        ) {
-            return data as ApiResponse<T>;
+        if (data && typeof data === "object") {
+            const d = data as any;
+            if (("isSuccess" in d || "IsSuccess" in d) && ("value" in d || "Value" in d)) {
+                return {
+                    value: (d.value !== undefined ? d.value : d.Value) as T,
+                    isSuccess: d.isSuccess ?? d.IsSuccess,
+                    isFailure: d.isFailure ?? d.IsFailure,
+                    error: d.error ?? d.Error ?? { code: "", description: "" }
+                };
+            }
         }
 
         return {

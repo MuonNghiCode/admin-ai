@@ -14,11 +14,13 @@ import {
   MdPerson,
   MdSupervisedUserCircle,
   MdSecurity,
+  MdRecordVoiceOver,
 } from "react-icons/md";
 import { GiBearFace } from "react-icons/gi";
 import { useAdminPrefs } from "@/contexts/AdminPreferencesContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { MdOutlineRecordVoiceOver } from "react-icons/md";
 
 const NAV_ITEMS = [
   { icon: MdDashboard, label: "Tổng quan", href: "/admin/dashboard" },
@@ -26,6 +28,7 @@ const NAV_ITEMS = [
   { icon: MdDevices, label: "Thiết bị", href: "/admin/devices" },
   { icon: MdLibraryMusic, label: "Âm nhạc", href: "/admin/songs" },
   { icon: MdMenuBook, label: "Truyện", href: "/admin/stories" },
+  { icon: MdRecordVoiceOver, label: "Giọng đọc mẫu", href: "/admin/voices" },
   { icon: MdSupervisedUserCircle, label: "Người dùng", href: "/admin/users" },
   { icon: MdSecurity, label: "An toàn AI", href: "/admin/safety" },
 ];

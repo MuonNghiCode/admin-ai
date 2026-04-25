@@ -18,7 +18,7 @@ function emptyStory(): StoryUpsertRequest {
 }
 
 function mapStoryToForm(story: StoryItem): StoryUpsertRequest {
-  return { id: story.id, name: story.name, gcsPath: "", contentType: story.contentType || "text/plain" };
+  return { id: story.id, name: story.name, gcsPath: story.gcsPath || "", contentType: story.contentType || "text/plain" };
 }
 
 const STORY_COLORS = ["#FF8C42", "#7C5CFC", "#17409A", "#4ECDC4", "#FF6B9D"];
@@ -31,6 +31,7 @@ export default function StoriesManagement() {
   const [activeTab, setActiveTab] = useState<CrudTab>("list");
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
   const [form, setForm] = useState<StoryUpsertRequest>(emptyStory());
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const { toast, showError, showSuccess, closeToast } = useToast();
 
   const selected = useMemo(() => stories.find((item) => item.id === selectedId) ?? null, [stories, selectedId]);
@@ -63,13 +64,30 @@ export default function StoriesManagement() {
     setSaving(true);
     try {
       if (drawerMode === "edit" && selected) {
-        const res = await adminService.updateStory(selected.id, form);
-        if (res.isFailure) throw new Error(res.error?.description || "Cập nhật thất bại");
-        showSuccess("Đã cập nhật truyện", form.name);
+        if (uploadFile) {
+          const res = await adminService.uploadMedia(uploadFile, "story", { 
+            id: selected.id,
+            name: form.name || undefined 
+          });
+          if (res.isFailure) throw new Error(res.error?.description || "Cập nhật thất bại");
+          showSuccess("Đã cập nhật tệp và thông tin truyện", form.name || uploadFile.name);
+          setUploadFile(null);
+        } else {
+          const res = await adminService.updateStory(selected.id, form);
+          if (res.isFailure) throw new Error(res.error?.description || "Cập nhật thất bại");
+          showSuccess("Đã cập nhật truyện", form.name);
+        }
       } else {
-        const res = await adminService.createStory(form);
-        if (res.isFailure) throw new Error(res.error?.description || "Tạo thất bại");
-        showSuccess("Đã tạo truyện", form.name);
+        if (uploadFile) {
+          const res = await adminService.uploadMedia(uploadFile, "story", { name: form.name || undefined });
+          if (res.isFailure) throw new Error(res.error?.description || "Tải lên thất bại");
+          showSuccess("Đã tải lên và tạo truyện", form.name || uploadFile.name);
+          setUploadFile(null);
+        } else {
+          const res = await adminService.createStory(form);
+          if (res.isFailure) throw new Error(res.error?.description || "Tạo thất bại");
+          showSuccess("Đã tạo truyện", form.name);
+        }
       }
       await loadStories();
       setDrawerMode(null);
@@ -176,6 +194,19 @@ export default function StoriesManagement() {
                     </div>
                   </div>
 
+                  <div className="space-y-2 pt-2 border-t border-[#F0F2F8]">
+                    <div className="py-2 border-b border-[#F0F2F8]">
+                      <p className="text-[10px] text-[#9CA3AF] mb-1">GCS Path</p>
+                      <p className="text-xs font-mono text-[#FF8C42] break-all">{selected.gcsPath || "–"}</p>
+                    </div>
+                    {selected.audioUrl && (
+                      <div className="py-2 border-b border-[#F0F2F8]">
+                        <p className="text-[10px] text-[#9CA3AF] mb-1">Signed URL</p>
+                        <p className="text-xs font-mono text-[#6B7280] break-all">{selected.audioUrl}</p>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex gap-2 pt-2 border-t border-[#F0F2F8]">
                     <button type="button" onClick={openEdit}
                       className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#17409A] py-2.5 text-xs font-black text-[#17409A] hover:bg-[#17409A] hover:text-white transition-colors">
@@ -197,9 +228,32 @@ export default function StoriesManagement() {
 
       <CrudEditorDrawer open={drawerMode !== null} mode={drawerMode ?? "create"} title="Truyện" description="Thêm hoặc chỉnh sửa truyện trong kho nội dung." onClose={() => setDrawerMode(null)}>
         <div className="space-y-5">
-          <label className={labelCls}>Tên truyện
+          <label className={labelCls}>Tên truyện (Để trống nếu muốn lấy từ tên file)
             <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className={fieldCls} />
           </label>
+          
+          <div className="py-4 border-t border-b border-dashed border-orange-200 bg-orange-50/30 rounded-xl px-4 space-y-3">
+             <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest text-center">Tải lên file truyện (TXT/MP3)</p>
+             <input 
+                type="file" 
+                accept="text/plain,audio/mpeg" 
+                className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setUploadFile(file);
+                  if (file && !form.name) {
+                    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+                    setForm(p => ({ ...p, name: nameWithoutExt }));
+                  }
+                }}
+             />
+             {uploadFile && (
+               <p className="text-[10px] text-green-600 font-bold italic text-center">File đã chọn: {uploadFile.name}</p>
+             )}
+          </div>
+
+          <p className="text-center text-[10px] text-slate-400 font-bold">HOẶC NHẬP PATH THỦ CÔNG</p>
+
           <label className={labelCls}>GCS Path
             <input value={form.gcsPath} onChange={(e) => setForm((p) => ({ ...p, gcsPath: e.target.value }))} className={fieldCls} />
           </label>
@@ -209,7 +263,7 @@ export default function StoriesManagement() {
           <button type="button" onClick={() => void saveStory()} disabled={saving}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#17409A] py-3 text-sm font-black text-white disabled:opacity-60 hover:bg-[#0E2A66] transition-colors">
             <MdSave className="text-base" />
-            {saving ? "Đang lưu..." : drawerMode === "edit" ? "Lưu thay đổi" : "Tạo truyện"}
+            {saving ? "Đang xử lý..." : drawerMode === "edit" ? "Lưu thay đổi" : "Lưu truyện"}
           </button>
         </div>
       </CrudEditorDrawer>

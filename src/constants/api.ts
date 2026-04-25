@@ -33,11 +33,18 @@ export const API_ENDPOINTS = {
     SONG_BY_ID: (id: string) => `/api/Admin/songs/${id}`,
     STORIES: "/api/Admin/stories",
     STORY_BY_ID: (id: string) => `/api/Admin/stories/${id}`,
+    DEMO_VOICES: "/api/Admin/demo-voices",
+    DEMO_VOICE_BY_ID: (id: string) => `/api/Admin/demo-voices/${id}`,
     USERS: "/api/Admin/users",
     USER_BY_ID: (id: string) => `/api/Admin/users/${id}`,
     USER_ROLE: (id: string) => `/api/Admin/users/${id}/role`,
     SAFETY: "/api/Admin/safety",
     SAFETY_BY_ID: (id: number) => `/api/Admin/safety/${id}`,
+    SYNC: "/api/Admin/sync",
+    GENERATE_DEMO: "/api/Admin/generate-demo",
+    UPLOAD_MEDIA: "/api/Admin/media/upload",
+    REQUEST_UPLOAD: "/api/Admin/request-upload",
+    CONFIRM_UPLOAD: "/api/Admin/confirm-upload",
   },
 } as const;
 

@@ -18,7 +18,7 @@ function emptySong(): SongUpsertRequest {
 }
 
 function mapSongToForm(song: SongItem): SongUpsertRequest {
-  return { id: song.id, name: song.name, artist: song.artist, audioUrl: song.audioUrl, gcsPath: "" };
+  return { id: song.id, name: song.name, artist: song.artist, audioUrl: song.audioUrl, gcsPath: song.gcsPath ?? "" };
 }
 
 const ARTIST_COLORS = ["#17409A", "#7C5CFC", "#4ECDC4", "#FF8C42", "#FF6B9D"];
@@ -31,6 +31,7 @@ export default function SongsManagement() {
   const [activeTab, setActiveTab] = useState<CrudTab>("list");
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
   const [form, setForm] = useState<SongUpsertRequest>(emptySong());
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const { toast, showError, showSuccess, closeToast } = useToast();
 
   const selected = useMemo(() => songs.find((item) => item.id === selectedId) ?? null, [songs, selectedId]);
@@ -63,13 +64,34 @@ export default function SongsManagement() {
     setSaving(true);
     try {
       if (drawerMode === "edit" && selected) {
-        const res = await adminService.updateSong(selected.id, form);
-        if (res.isFailure) throw new Error(res.error?.description || "Cập nhật thất bại");
-        showSuccess("Đã cập nhật bài hát", form.name);
+        if (uploadFile) {
+          const res = await adminService.uploadMedia(uploadFile, "music", { 
+            id: selected.id,
+            name: form.name || undefined, 
+            displayInfo: form.artist || undefined 
+          });
+          if (res.isFailure) throw new Error(res.error?.description || "Cập nhật thất bại");
+          showSuccess("Đã cập nhật tệp và thông tin bài hát", form.name || uploadFile.name);
+          setUploadFile(null);
+        } else {
+          const res = await adminService.updateSong(selected.id, form);
+          if (res.isFailure) throw new Error(res.error?.description || "Cập nhật thất bại");
+          showSuccess("Đã cập nhật bài hát", form.name);
+        }
       } else {
-        const res = await adminService.createSong(form);
-        if (res.isFailure) throw new Error(res.error?.description || "Tạo thất bại");
-        showSuccess("Đã tạo bài hát", form.name);
+        if (uploadFile) {
+          const res = await adminService.uploadMedia(uploadFile, "music", { 
+            name: form.name || undefined, 
+            displayInfo: form.artist || undefined 
+          });
+          if (res.isFailure) throw new Error(res.error?.description || "Tải lên thất bại");
+          showSuccess("Đã tải lên và tạo bài hát", form.name || uploadFile.name);
+          setUploadFile(null);
+        } else {
+          const res = await adminService.createSong(form);
+          if (res.isFailure) throw new Error(res.error?.description || "Tạo thất bại");
+          showSuccess("Đã tạo bài hát", form.name);
+        }
       }
       await loadSongs();
       setDrawerMode(null);
@@ -178,6 +200,10 @@ export default function SongsManagement() {
 
                   <div className="space-y-2 pt-2 border-t border-[#F0F2F8]">
                     <div className="py-2 border-b border-[#F0F2F8]">
+                      <p className="text-[10px] text-[#9CA3AF] mb-1">GCS Path</p>
+                      <p className="text-xs font-mono text-[#17409A] break-all">{selected.gcsPath || "–"}</p>
+                    </div>
+                    <div className="py-2 border-b border-[#F0F2F8]">
                       <p className="text-[10px] text-[#9CA3AF] mb-1">Audio URL</p>
                       <p className="text-xs font-mono text-[#6B7280] break-all">{selected.audioUrl || "–"}</p>
                     </div>
@@ -204,19 +230,47 @@ export default function SongsManagement() {
 
       <CrudEditorDrawer open={drawerMode !== null} mode={drawerMode ?? "create"} title="Bài hát" description="Thêm hoặc chỉnh sửa bài hát trong thư viện." onClose={() => setDrawerMode(null)}>
         <div className="space-y-5">
-          <label className={labelCls}>Tên bài hát
+          <label className={labelCls}>Tên bài hát (Để trống nếu muốn lấy từ tên file)
             <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className={fieldCls} />
           </label>
           <label className={labelCls}>Nghệ sĩ
             <input value={form.artist} onChange={(e) => setForm((p) => ({ ...p, artist: e.target.value }))} className={fieldCls} />
           </label>
+          
+          <div className="py-4 border-t border-b border-dashed border-blue-200 bg-blue-50/30 rounded-xl px-4 space-y-3">
+             <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest text-center">Tải lên file âm thanh (MP3)</p>
+             <input 
+                type="file" 
+                accept="audio/mpeg" 
+                className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setUploadFile(file);
+                  if (file && !form.name) {
+                    const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+                    setForm(p => ({ ...p, name: nameWithoutExt }));
+                  }
+                }}
+             />
+             {uploadFile && (
+               <p className="text-[10px] text-green-600 font-bold italic text-center">File đã chọn: {uploadFile.name}</p>
+             )}
+          </div>
+
+          <label className={labelCls}>GCS Path
+            <input value={form.gcsPath} onChange={(e) => setForm((p) => ({ ...p, gcsPath: e.target.value }))} className={fieldCls} />
+          </label>
+          
+          <p className="text-center text-[10px] text-slate-400 font-bold">HOẶC NHẬP LINK THỦ CÔNG</p>
+
           <label className={labelCls}>Audio URL
             <input value={form.audioUrl} onChange={(e) => setForm((p) => ({ ...p, audioUrl: e.target.value }))} className={fieldCls} />
           </label>
+          
           <button type="button" onClick={() => void saveSong()} disabled={saving}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#17409A] py-3 text-sm font-black text-white disabled:opacity-60 hover:bg-[#0E2A66] transition-colors">
             <MdSave className="text-base" />
-            {saving ? "Đang lưu..." : drawerMode === "edit" ? "Lưu thay đổi" : "Tạo bài hát"}
+            {saving ? "Đang xử lý..." : drawerMode === "edit" ? "Lưu thay đổi" : "Lưu bài hát"}
           </button>
         </div>
       </CrudEditorDrawer>

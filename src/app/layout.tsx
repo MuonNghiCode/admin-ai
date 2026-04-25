@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${nunito.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#F4F7FF] text-[#1A1A2E]">
+      <body className="min-h-full flex flex-col bg-[#F4F7FF] text-[#1A1A2E]" suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

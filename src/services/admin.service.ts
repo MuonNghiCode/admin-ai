@@ -118,6 +118,75 @@ class AdminService extends BaseApiService {
   deleteGlobalWord(id: number) {
     return this.delete<null>(API_ENDPOINTS.ADMIN.SAFETY_BY_ID(id));
   }
+
+  getDemoVoices() {
+    return this.get<any[]>(API_ENDPOINTS.ADMIN.DEMO_VOICES);
+  }
+
+  deleteDemoVoice(id: string) {
+    return this.delete<any>(API_ENDPOINTS.ADMIN.DEMO_VOICE_BY_ID(id));
+  }
+
+  syncMedia() {
+    return this.post<any>(API_ENDPOINTS.ADMIN.SYNC, {});
+  }
+
+  generateDemo(payload: { text: string; voiceId: string; provider: string }) {
+    return this.post<any>(API_ENDPOINTS.ADMIN.GENERATE_DEMO, payload);
+  }
+
+  async uploadMedia(file: File, category: string, metadata?: { id?: string; name?: string; displayInfo?: string }) {
+    // 1. Request Signed Upload URL (POST)
+    const urlRes = await this.post<string>(API_ENDPOINTS.ADMIN.REQUEST_UPLOAD, {
+      fileName: file.name,
+      category: category,
+      id: metadata?.id,
+    });
+    
+    if (urlRes.isFailure) return urlRes;
+
+    let uploadUrl = urlRes.value;
+    // Safety check if backend returns { url: "...", message: "...", value: "..." }
+    if (typeof uploadUrl === "object" && uploadUrl !== null) {
+      uploadUrl = (uploadUrl as any).message || (uploadUrl as any).url || (uploadUrl as any).Value || (uploadUrl as any).value;
+    }
+
+    if (!uploadUrl || typeof uploadUrl !== "string") {
+      return { isFailure: true, error: { description: "Failed to get a valid upload URL" } } as any;
+    }
+
+    // Detect Content-Type from extension
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    let contentType = "application/octet-stream";
+    if (extension === "txt") contentType = "text/plain";
+    else if (["mp3", "wav", "m4a", "aac"].includes(extension || "")) contentType = "audio/mpeg";
+
+    // 2. Upload directly to GCS
+    try {
+      const response = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": contentType,
+        }
+      });
+
+      if (!response.ok) {
+        return { isFailure: true, error: { description: `Upload to GCS failed with status: ${response.status}` } } as any;
+      }
+
+      // 3. Confirm with Backend
+      return this.post<any>(API_ENDPOINTS.ADMIN.CONFIRM_UPLOAD, {
+        id: metadata?.id,
+        fileName: file.name,
+        category: category,
+        name: metadata?.name,
+        displayInfo: metadata?.displayInfo,
+      });
+    } catch (e) {
+      return { isFailure: true, error: { description: `GCS Upload Error: ${e instanceof Error ? e.message : "Unknown"}` } } as any;
+    }
+  }
 }
 
 export const adminService = new AdminService();
