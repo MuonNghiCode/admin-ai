@@ -136,3 +136,25 @@ export type StoryResponse = ApiResponse<StoryItem>;
 export type UsersResponse = ApiResponse<UserItem[]>;
 export type UserResponse = ApiResponse<UserItem>;
 export type SafetyResponse = ApiResponse<BannedWord[]>;
+
+export interface DemoVoiceItem {
+  id: string;
+  voiceId: string;
+  name: string;
+  provider: string;
+  isPremium: boolean;
+  description: string;
+  createdAt: string;
+}
+
+export interface DemoVoiceUpsertRequest {
+  id?: string;
+  voiceId: string;
+  name: string;
+  provider: string;
+  isPremium: boolean;
+  description: string;
+}
+
+export type DemoVoicesResponse = ApiResponse<DemoVoiceItem[]>;
+export type DemoVoiceResponse = ApiResponse<DemoVoiceItem>;

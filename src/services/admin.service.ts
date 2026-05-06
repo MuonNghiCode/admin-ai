@@ -119,20 +119,24 @@ class AdminService extends BaseApiService {
     return this.delete<null>(API_ENDPOINTS.ADMIN.SAFETY_BY_ID(id));
   }
 
-  getDemoVoices() {
-    return this.get<any[]>(API_ENDPOINTS.ADMIN.DEMO_VOICES);
+  getVoices() {
+    return this.get<DemoVoicesResponse["value"]>(API_ENDPOINTS.ADMIN.VOICES);
   }
 
-  deleteDemoVoice(id: string) {
-    return this.delete<any>(API_ENDPOINTS.ADMIN.DEMO_VOICE_BY_ID(id));
+  createVoice(payload: DemoVoiceUpsertRequest) {
+    return this.post<DemoVoiceResponse["value"]>(API_ENDPOINTS.ADMIN.VOICES, payload);
+  }
+
+  updateVoice(id: string, payload: DemoVoiceUpsertRequest) {
+    return this.put<null>(API_ENDPOINTS.ADMIN.VOICE_BY_ID(id), payload);
+  }
+
+  deleteVoice(id: string) {
+    return this.delete<null>(API_ENDPOINTS.ADMIN.VOICE_BY_ID(id));
   }
 
   syncMedia() {
     return this.post<any>(API_ENDPOINTS.ADMIN.SYNC, {});
-  }
-
-  generateDemo(payload: { text: string; voiceId: string; provider: string }) {
-    return this.post<any>(API_ENDPOINTS.ADMIN.GENERATE_DEMO, payload);
   }
 
   async uploadMedia(file: File, category: string, metadata?: { id?: string; name?: string; displayInfo?: string }) {

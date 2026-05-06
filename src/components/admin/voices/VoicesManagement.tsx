@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MdRefresh, MdRecordVoiceOver, MdFileUpload, MdDelete } from "react-icons/md";
+import { MdRefresh, MdRecordVoiceOver, MdDelete, MdEdit } from "react-icons/md";
 import { adminService } from "@/services/admin.service";
 import AppToast from "@/components/ui/AppToast";
 import { useToast } from "@/hooks/useToast";
@@ -9,16 +9,7 @@ import AdminPageHeader from "@/components/admin/shared/AdminPageHeader";
 import AdminLoadingSkeleton from "@/components/admin/shared/AdminLoadingSkeleton";
 import CrudWorkspaceTabs, { type CrudTab } from "@/components/admin/shared/CrudWorkspaceTabs";
 import CrudEditorDrawer from "@/components/admin/shared/CrudEditorDrawer";
-
-interface DemoVoiceItem {
-  id: string;
-  name: string;
-  gcsPath: string;
-  provider: string;
-  isPremium: boolean;
-  description: string;
-  previewUrl: string;
-}
+import type { DemoVoiceItem, DemoVoiceUpsertRequest } from "@/types";
 
 export default function VoicesManagement() {
   const [voices, setVoices] = useState<DemoVoiceItem[]>([]);
@@ -26,13 +17,17 @@ export default function VoicesManagement() {
   const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CrudTab>("list");
-  const [drawerMode, setDrawerMode] = useState<"create" | null>(null);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
   
-  // Generation state
-  const [genText, setGenText] = useState("Chào bé, gấu là Lucky đây!");
-  const [genVoiceId, setGenVoiceId] = useState("vi-VN-Neural2-A");
-  const [genProvider, setGenProvider] = useState("GCP");
+  // Form State
+  const [formData, setFormData] = useState<DemoVoiceUpsertRequest>({
+    id: "",
+    voiceId: "",
+    name: "",
+    provider: "GCP",
+    isPremium: false,
+    description: ""
+  });
 
   const { toast, showError, showSuccess, closeToast } = useToast();
 
@@ -41,7 +36,7 @@ export default function VoicesManagement() {
   const loadVoices = async () => {
     setLoading(true);
     try {
-      const res = await adminService.getDemoVoices();
+      const res = await adminService.getVoices();
       if (res.isFailure) throw new Error(res.error?.description || "Lỗi tải danh sách");
       const data = res.value ?? [];
       setVoices(data);
@@ -57,42 +52,36 @@ export default function VoicesManagement() {
     void loadVoices();
   }, []);
 
-  const handleProviderChange = (provider: string) => {
-    setGenProvider(provider);
-    if (provider === "GCP") {
-      setGenVoiceId("vi-VN-Neural2-A");
-    } else {
-      setGenVoiceId("pNInz6obpgnuPs397vXP");
-    }
+  const openCreate = () => {
+    setFormData({
+      id: `voice-${Date.now()}`,
+      voiceId: "",
+      name: "",
+      provider: "GCP",
+      isPremium: false,
+      description: ""
+    });
+    setDrawerMode("create");
   };
 
-  const handleGenerate = async () => {
-    setSaving(true);
-    try {
-      const res = await adminService.generateDemo({
-        text: genText,
-        voiceId: genVoiceId,
-        provider: genProvider
-      });
-      if (res.isFailure) throw new Error(res.error?.description || "Lỗi sinh demo");
-      showSuccess("Thành công", "Đã sinh và lưu giọng đọc mẫu");
-      await loadVoices();
-      setDrawerMode(null);
-    } catch (e) {
-      showError("Lỗi", e instanceof Error ? e.message : "Không xác định");
-    } finally {
-      setSaving(false);
-    }
+  const openEdit = () => {
+    if (!selected) return;
+    setFormData({ ...selected });
+    setDrawerMode("edit");
   };
 
-  const handleUpload = async () => {
-    if (!uploadFile) return;
+  const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await adminService.uploadMedia(uploadFile, "demovoice");
-      if (res.isFailure) throw new Error(res.error?.description || "Lỗi tải lên");
-      showSuccess("Thành công", "Đã tải lên giọng đọc mẫu");
-      setUploadFile(null);
+      if (drawerMode === "create") {
+        const res = await adminService.createVoice(formData);
+        if (res.isFailure) throw new Error(res.error?.description || "Lỗi tạo giọng");
+        showSuccess("Thành công", "Đã thêm giọng mới");
+      } else {
+        const res = await adminService.updateVoice(formData.id!, formData);
+        if (res.isFailure) throw new Error(res.error?.description || "Lỗi cập nhật giọng");
+        showSuccess("Thành công", "Đã cập nhật giọng");
+      }
       await loadVoices();
       setDrawerMode(null);
     } catch (e) {
@@ -104,10 +93,10 @@ export default function VoicesManagement() {
 
   const handleDelete = async () => {
     if (!selected) return;
-    if (!confirm(`Xóa giọng mẫu "${selected.name}"?`)) return;
+    if (!confirm(`Xóa giọng "${selected.name}"?`)) return;
     setSaving(true);
     try {
-      const res = await adminService.deleteDemoVoice(selected.id);
+      const res = await adminService.deleteVoice(selected.id);
       if (res.isFailure) throw new Error(res.error?.description || "Lỗi xóa");
       showSuccess("Đã xóa", selected.name);
       setSelectedId(null);
@@ -125,17 +114,17 @@ export default function VoicesManagement() {
   return (
     <div className="space-y-7">
       <AdminPageHeader 
-        badge="AI Voices"
-        title="Quản lý Giọng đọc mẫu"
-        description="Sinh giọng nói AI hoặc tải lên các mẫu giọng để người dùng nghe thử."
+        badge="Voice Catalog"
+        title="Quản lý Voice Catalog"
+        description="Quản lý danh sách các giọng nói được hỗ trợ trong hệ thống (GCP, ElevenLabs)."
         stats={[{ label: "tổng số giọng", value: voices.length }]}
         actions={
           <>
             <button onClick={() => void loadVoices()} className="flex items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-black text-[#17409A]">
               <MdRefresh /> Tải lại
             </button>
-            <button onClick={() => setDrawerMode("create")} className="flex items-center gap-2 rounded-2xl bg-[#7C5CFC] px-4 py-2.5 text-sm font-black text-white shadow-sm">
-              <MdRecordVoiceOver /> Thêm giọng mẫu
+            <button onClick={openCreate} className="flex items-center gap-2 rounded-2xl bg-[#7C5CFC] px-4 py-2.5 text-sm font-black text-white shadow-sm">
+              <MdRecordVoiceOver /> Thêm giọng
             </button>
           </>
         }
@@ -156,12 +145,12 @@ export default function VoicesManagement() {
                       onClick={() => { setSelectedId(v.id); setActiveTab("detail"); }}
                       className={`w-full flex items-center gap-4 py-4 px-3 rounded-xl transition-all ${selectedId === v.id ? "bg-purple-50" : "hover:bg-gray-50"}`}
                     >
-                      <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-purple-100 text-purple-600 text-xl">
+                      <div className={`h-10 w-10 flex items-center justify-center rounded-xl text-xl ${v.isPremium ? "bg-amber-100 text-amber-600" : "bg-purple-100 text-purple-600"}`}>
                         <MdRecordVoiceOver />
                       </div>
                       <div className="text-left flex-1">
                         <p className="text-sm font-black text-gray-900">{v.name}</p>
-                        <p className="text-[11px] text-gray-400 font-bold uppercase">{v.provider} • {v.isPremium ? "Premium" : "Free"}</p>
+                        <p className="text-[11px] text-gray-400 font-bold uppercase">{v.provider} • {v.voiceId} • {v.isPremium ? "Premium" : "Free"}</p>
                       </div>
                     </button>
                   ))}
@@ -171,28 +160,43 @@ export default function VoicesManagement() {
             <div>
               {selected ? (
                 <div className="space-y-6">
-                  <div className="rounded-2xl bg-gray-50 p-6 space-y-4">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Nghe thử</p>
-                    <audio controls src={selected.previewUrl} className="w-full h-10" />
-                    
-                    <div className="space-y-3 pt-4 border-t border-gray-200">
+                  <div className="rounded-2xl bg-gray-50 p-6 space-y-4 border border-gray-100">
+                    <div className="space-y-3">
                        <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase">GCS Path</p>
-                         <p className="text-xs font-mono text-gray-600 break-all">{selected.gcsPath}</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase">Provider ID</p>
+                         <p className="text-sm font-mono font-bold text-gray-800 break-all">{selected.voiceId}</p>
                        </div>
                        <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase">Mô tả/Text</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase">Nhà cung cấp</p>
+                         <p className="text-sm font-bold text-gray-800">{selected.provider}</p>
+                       </div>
+                       <div>
+                         <p className="text-[10px] font-black text-gray-400 uppercase">Mô tả</p>
                          <p className="text-xs text-gray-600 italic">"{selected.description}"</p>
+                       </div>
+                       <div>
+                         <p className="text-[10px] font-black text-gray-400 uppercase">Loại giọng</p>
+                         <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${selected.isPremium ? 'bg-amber-100 text-amber-700' : 'bg-gray-200 text-gray-700'}`}>
+                           {selected.isPremium ? 'Premium (Pro)' : 'Free (Standard)'}
+                         </span>
                        </div>
                     </div>
 
-                    <button 
-                      onClick={() => void handleDelete()} 
-                      disabled={saving}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-200 text-red-500 text-xs font-black hover:bg-red-50 transition-colors"
-                    >
-                      <MdDelete /> Xóa giọng mẫu
-                    </button>
+                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200">
+                      <button 
+                        onClick={openEdit} 
+                        className="flex items-center justify-center gap-2 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 text-xs font-black hover:bg-gray-50 transition-colors"
+                      >
+                        <MdEdit /> Chỉnh sửa
+                      </button>
+                      <button 
+                        onClick={() => void handleDelete()} 
+                        disabled={saving}
+                        className="flex items-center justify-center gap-2 py-2 rounded-xl border border-red-200 text-red-500 text-xs font-black hover:bg-red-50 transition-colors"
+                      >
+                        <MdDelete /> Xóa giọng
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -207,78 +211,45 @@ export default function VoicesManagement() {
 
       <CrudEditorDrawer 
         open={drawerMode !== null} 
-        mode="create" 
-        title="Thêm Giọng mẫu" 
-        description="Bạn có thể tự sinh giọng AI hoặc tải lên file MP3 có sẵn." 
+        mode={drawerMode || "create"} 
+        title={drawerMode === "create" ? "Thêm Giọng Mới" : "Sửa Thông Tin Giọng"} 
+        description="Quản lý cấu hình giọng nói từ các nhà cung cấp TTS." 
         onClose={() => setDrawerMode(null)}
       >
         <div className="space-y-6">
-          <div className="p-4 rounded-2xl bg-purple-50 border border-purple-100 space-y-4">
-             <p className="text-[10px] font-black text-purple-600 uppercase text-center">Tùy chọn 1: Sinh giọng AI</p>
-             <label className={labelCls}>Nội dung văn bản
-               <input value={genText} onChange={e => setGenText(e.target.value)} className={fieldCls} />
-             </label>
-             <div className="grid grid-cols-2 gap-3">
-               <label className={labelCls}>Provider
-                  <select value={genProvider} onChange={e => handleProviderChange(e.target.value)} className={fieldCls}>
-                    <option value="GCP">Google Cloud</option>
-                    <option value="ElevenLabs">ElevenLabs</option>
-                  </select>
-               </label>
-               <label className={labelCls}>Giọng nói (Voice)
-                  <select value={genVoiceId} onChange={e => setGenVoiceId(e.target.value)} className={fieldCls}>
-                    {genProvider === "GCP" ? (
-                      <>
-                        <optgroup label="Neural2 (Chất lượng cao)">
-                          <option value="vi-VN-Neural2-A">Việt Nam - Nữ (A)</option>
-                          <option value="vi-VN-Neural2-D">Việt Nam - Nam (D)</option>
-                        </optgroup>
-                        <optgroup label="Wavenet">
-                          <option value="vi-VN-Wavenet-A">Việt Nam - Nữ (A)</option>
-                          <option value="vi-VN-Wavenet-B">Việt Nam - Nam (B)</option>
-                          <option value="vi-VN-Wavenet-C">Việt Nam - Nữ (C)</option>
-                          <option value="vi-VN-Wavenet-D">Việt Nam - Nam (D)</option>
-                        </optgroup>
-                      </>
-                    ) : (
-                      <>
-                        <optgroup label="ElevenLabs (VJP Premium)">
-                          <option value="pNInz6obpgnuPs397vXP">Adam (Nam - Trầm)</option>
-                          <option value="TX3LPaxmHKxFfW646Sse">Liam (Nam - Ấm áp VJP)</option>
-                          <option value="EXAVITQu4vr4xnSDxMaL">Bella (Nữ - Ngọt ngào)</option>
-                          <option value="Lcf7eeY9feD1p95OmDAn">Sarah (Nữ - Truyền cảm VJP)</option>
-                          <option value="MF3mGyEYCl7XYW7L696t">Rachel (Nữ - Chuyên nghiệp)</option>
-                          <option value="ErXw7ePBqOfDr909BvG6">Antoni (Nam - Trẻ)</option>
-                          <option value="IKne3meq5pC9XdtgXx6M">Charlie (Nam - Kể chuyện VJP)</option>
-                        </optgroup>
-                      </>
-                    )}
-                  </select>
-               </label>
-             </div>
-             <button onClick={() => void handleGenerate()} disabled={saving} className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-black shadow-lg shadow-purple-200">
-               {saving ? "Đang xử lý..." : "Sinh & Lưu vào Kho"}
-             </button>
+          <label className={labelCls}>Mã định danh hệ thống (ID)
+             <input value={formData.id} onChange={e => setFormData({ ...formData, id: e.target.value })} disabled={drawerMode === "edit"} className={`${fieldCls} ${drawerMode === "edit" ? "opacity-60 cursor-not-allowed" : ""}`} />
+             <p className="text-[10px] text-gray-400 font-normal lowercase normal-case">Vd: voice-gcp-a, voice-eleven-adam</p>
+          </label>
+          <label className={labelCls}>Tên hiển thị
+             <input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Vd: Gấu Chị A (Nữ)" className={fieldCls} />
+          </label>
+          <label className={labelCls}>Mã nhà cung cấp (Voice ID)
+             <input value={formData.voiceId} onChange={e => setFormData({ ...formData, voiceId: e.target.value })} placeholder="Vd: vi-VN-Neural2-A, pNInz6obpgnuPs397vXP" className={fieldCls} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className={labelCls}>Nhà cung cấp
+               <select value={formData.provider} onChange={e => setFormData({ ...formData, provider: e.target.value })} className={fieldCls}>
+                 <option value="GCP">Google Cloud (GCP)</option>
+                 <option value="ElevenLabs">ElevenLabs</option>
+                 <option value="Azure">Azure</option>
+                 <option value="AWS">AWS Polly</option>
+               </select>
+            </label>
+            <label className={labelCls}>Loại giọng
+               <select value={formData.isPremium ? "true" : "false"} onChange={e => setFormData({ ...formData, isPremium: e.target.value === "true" })} className={fieldCls}>
+                 <option value="false">Free (Standard)</option>
+                 <option value="true">Premium (Pro)</option>
+               </select>
+            </label>
           </div>
+          <label className={labelCls}>Mô tả ngắn
+             <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Vd: Giọng nam trầm ấm, chuyên nghiệp." className={`${fieldCls} h-24 resize-none`} />
+          </label>
 
-          <div className="relative py-2 flex items-center">
-             <div className="flex-1 border-t border-gray-100"></div>
-             <span className="px-3 text-[10px] font-black text-gray-300 uppercase">Hoặc</span>
-             <div className="flex-1 border-t border-gray-100"></div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 space-y-4">
-             <p className="text-[10px] font-black text-blue-600 uppercase text-center">Tùy chọn 2: Tải lên file MP3</p>
-             <input 
-                type="file" 
-                accept="audio/mpeg" 
-                onChange={e => setUploadFile(e.target.files?.[0] || null)}
-                className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200"
-             />
-             <button onClick={() => void handleUpload()} disabled={saving || !uploadFile} className="w-full py-3 bg-blue-600 text-white rounded-xl text-xs font-black">
-               {saving ? "Đang tải lên..." : "Tải lên & Lưu"}
-             </button>
-          </div>
+          <button onClick={() => void handleSave()} disabled={saving} className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-black shadow-lg shadow-purple-200">
+             {saving ? "Đang xử lý..." : "Lưu thay đổi"}
+          </button>
         </div>
       </CrudEditorDrawer>
 
