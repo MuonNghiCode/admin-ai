@@ -38,7 +38,13 @@ export default function VoicesManagement() {
     try {
       const res = await adminService.getVoices();
       if (res.isFailure) throw new Error(res.error?.description || "Lỗi tải danh sách");
-      const data = res.value ?? [];
+      
+      let data = res.value as any;
+      if (data && !Array.isArray(data) && Array.isArray(data.value)) {
+        data = data.value;
+      }
+      data = Array.isArray(data) ? data : [];
+      
       setVoices(data);
       if (data.length > 0 && !selectedId) setSelectedId(data[0].id);
     } catch (e) {
