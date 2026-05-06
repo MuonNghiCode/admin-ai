@@ -33,22 +33,7 @@ export default function MediaTestPage() {
     }
   };
 
-  const handleGenerateDemo = async () => {
-    setLoading(true);
-    try {
-      const res = await adminService.generateDemo({
-        text: demoText,
-        voiceId: demoVoiceId,
-        provider: demoProvider
-      });
-      if (res.isFailure) throw new Error(res.error?.description || "Sinh demo thất bại");
-      showSuccess("Sinh demo thành công", `Đã tạo file MP3 cho giọng ${demoVoiceId}`);
-    } catch (e) {
-      showError("Lỗi sinh demo", e instanceof Error ? e.message : "Không xác định");
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleUpload = async () => {
     if (!uploadFile) {
@@ -101,45 +86,7 @@ export default function MediaTestPage() {
           </button>
         </div>
 
-        {/* Generate Demo Section */}
-        <div className={cardCls}>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 text-2xl">
-              <MdRecordVoiceOver />
-            </div>
-            <div>
-              <h3 className="font-black text-lg">Sinh Demo Voice</h3>
-              <p className="text-sm text-gray-500">Tạo file MP3 nghe thử từ văn bản</p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <input 
-              placeholder="Nội dung nói..." 
-              value={demoText} 
-              onChange={e => setDemoText(e.target.value)} 
-              className={inputCls}
-            />
-            <div className="flex gap-4">
-              <select value={demoProvider} onChange={e => setDemoProvider(e.target.value)} className={inputCls}>
-                <option value="GCP">Google Cloud (GCP)</option>
-                <option value="ElevenLabs">ElevenLabs</option>
-              </select>
-              <input 
-                placeholder="Voice ID" 
-                value={demoVoiceId} 
-                onChange={e => setDemoVoiceId(e.target.value)} 
-                className={inputCls}
-              />
-            </div>
-            <button 
-              onClick={handleGenerateDemo} 
-              disabled={loading}
-              className={`${btnCls} bg-purple-600 hover:bg-purple-700 w-full`}
-            >
-              {loading ? "Đang tạo..." : "Tạo & Lưu Demo"}
-            </button>
-          </div>
-        </div>
+
 
         {/* Upload Section */}
         <div className={cardCls + " lg:col-span-2"}>
@@ -158,7 +105,6 @@ export default function MediaTestPage() {
               <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} className={inputCls}>
                 <option value="music">Nhạc (Music)</option>
                 <option value="story">Truyện (Story)</option>
-                <option value="demovoice">Demo Voice</option>
               </select>
             </div>
             <div className="space-y-2">

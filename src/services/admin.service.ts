@@ -18,6 +18,9 @@ import type {
   UsersResponse,
   AdminAddBannedWordRequest,
   SafetyResponse,
+  DemoVoiceUpsertRequest,
+  DemoVoiceResponse,
+  DemoVoicesResponse
 } from "@/types";
 
 class AdminService extends BaseApiService {
