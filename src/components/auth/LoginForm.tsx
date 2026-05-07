@@ -4,7 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IoLockClosedOutline, IoMailOutline } from "react-icons/io5";
 import InputField from "@/components/auth/InputField";
-import SocialButtons from "@/components/auth/SocialButtons";
+
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginForm() {
@@ -83,7 +83,7 @@ export default function LoginForm() {
         {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
       </button>
 
-      <SocialButtons />
+
     </form>
   );
 }
