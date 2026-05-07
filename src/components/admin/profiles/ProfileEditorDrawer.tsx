@@ -263,7 +263,7 @@ export default function ProfileEditorDrawer({
               </label>
 
               <label className="space-y-2 text-sm font-bold text-[#1A1A2E]">
-                <span>Subscription status</span>
+                <span>Trạng thái đăng ký</span>
                 <input
                   type="number"
                   min={0}
@@ -277,11 +277,11 @@ export default function ProfileEditorDrawer({
           </section>
 
           <section className="rounded-3xl border border-[#E5E7EB] bg-white p-5 shadow-lg shadow-[#17409A]/5">
-            <h4 className="text-lg font-black text-[#17409A]">Subscription</h4>
+            <h4 className="text-lg font-black text-[#17409A]">Gói đăng ký</h4>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {[
-                ["subscriptionPlanId", "Plan ID"] as const,
-                ["bearCategory", "Bear category"] as const,
+                ["subscriptionPlanId", "Mã gói (ID)"] as const,
+                ["bearCategory", "Loại Bear"] as const,
               ].map(([key, label]) => (
                 <label
                   key={key}
@@ -321,14 +321,14 @@ export default function ProfileEditorDrawer({
 
           <section className="rounded-3xl border border-[#E5E7EB] bg-white p-5 shadow-lg shadow-[#17409A]/5">
             <h4 className="text-lg font-black text-[#17409A]">
-              Business rules
+              Quy tắc hệ thống
             </h4>
             <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {[
-                ["subscriptionStartUtc", "Subscription start"] as const,
-                ["subscriptionEndUtc", "Subscription end"] as const,
-                ["graceEndUtc", "Grace end"] as const,
-                ["lastQuotaResetUtc", "Quota reset"] as const,
+                ["subscriptionStartUtc", "Ngày bắt đầu gói"] as const,
+                ["subscriptionEndUtc", "Ngày kết thúc gói"] as const,
+                ["graceEndUtc", "Hạn chót gia hạn"] as const,
+                ["lastQuotaResetUtc", "Lần reset hạn mức cuối"] as const,
               ].map(([key, label]) => (
                 <label
                   key={key}
@@ -357,28 +357,28 @@ export default function ProfileEditorDrawer({
             </h4>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <AppDropdown
-                label="TTS provider"
+                label="Nhà cung cấp TTS"
                 value={TTS_PROVIDER_OPTIONS.some((option) => option.value === form.preferredTtsProvider) ? form.preferredTtsProvider : "azure"}
                 options={[...TTS_PROVIDER_OPTIONS]}
                 onChange={(value) => update("preferredTtsProvider", value)}
               />
               <AppDropdown
-                label="Personality"
+                label="Tính cách"
                 value={PERSONALITY_OPTIONS.some((option) => option.value === form.personality) ? form.personality : "Than thien"}
                 options={[...PERSONALITY_OPTIONS]}
                 onChange={(value) => update("personality", value)}
               />
               <AppDropdown
-                label="Safety mode"
+                label="Chế độ an toàn"
                 value={SAFETY_MODE_OPTIONS.some((option) => option.value === form.safetyResponseMode) ? form.safetyResponseMode : 1}
                 options={[...SAFETY_MODE_OPTIONS]}
                 onChange={(value) => update("safetyResponseMode", value)}
               />
               {[
                 ["honorific", "Danh xưng"] as const,
-                ["preferredVoiceId", "Voice ID"] as const,
-                ["safetyPretendMessage", "Pretend message"] as const,
-                ["safetyWarningMessage", "Warning message"] as const,
+                ["preferredVoiceId", "Mã giọng nói (Voice ID)"] as const,
+                ["safetyPretendMessage", "Tin nhắn giả định"] as const,
+                ["safetyWarningMessage", "Tin nhắn cảnh báo"] as const,
               ].map(([key, label]) => (
                 <label
                   key={key}
@@ -400,10 +400,10 @@ export default function ProfileEditorDrawer({
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
               {[
-                ["subscribedSubjects", "Subscribed subjects"] as const,
-                ["blockedTopics", "Blocked topics"] as const,
-                ["whitelistTopics", "Whitelist topics"] as const,
-                ["bannedKeywords", "Banned keywords"] as const,
+                ["subscribedSubjects", "Chủ đề đăng ký"] as const,
+                ["blockedTopics", "Chủ đề bị chặn"] as const,
+                ["whitelistTopics", "Chủ đề an toàn"] as const,
+                ["bannedKeywords", "Từ khóa bị cấm"] as const,
               ].map(([key, label]) => (
                 <label
                   key={key}

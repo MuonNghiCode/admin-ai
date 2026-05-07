@@ -8,7 +8,7 @@ export default function SocialButtons() {
       <div className="flex items-center gap-2">
         <span className="h-px flex-1 bg-[#E5E7EB]" />
         <span className="text-xs font-black uppercase tracking-[0.18em] text-[#9CA3AF]">
-          hoặc
+          HOẶC
         </span>
         <span className="h-px flex-1 bg-[#E5E7EB]" />
       </div>

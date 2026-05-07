@@ -23,33 +23,15 @@ export default function AuthPage() {
             </div>
 
             <p className="text-xs font-black uppercase tracking-[0.25em] text-white/65">
-              Smart Commerce Control
+              Hệ thống quản trị thông minh
             </p>
             <h2 className="mt-4 max-w-xl text-5xl font-black leading-tight text-white">
-              Luxury Admin Space for Smart Teddy Data.
+              Không gian quản trị cao cấp cho dữ liệu Smart Teddy.
             </h2>
             <p className="mt-6 max-w-lg text-base leading-8 text-white/75">
-              Quản trị đơn hàng, danh mục sản phẩm và dữ liệu người dùng trong
-              giao diện đồng bộ, tinh tế và nhất quán.
+              Quản lý đơn hàng, danh mục sản phẩm và dữ liệu người dùng một cách
+              hiệu quả trong hệ sinh thái quản trị hiệu suất cao.
             </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              ["Orders", "128"],
-              ["Products", "96"],
-              ["Reports", "24"],
-            ].map(([label, value]) => (
-              <div
-                key={label}
-                className="rounded-2xl border border-white/20 bg-white/10 px-4 py-4"
-              >
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/65">
-                  {label}
-                </p>
-                <p className="mt-2 text-2xl font-black text-white">{value}</p>
-              </div>
-            ))}
           </div>
         </aside>
       </div>

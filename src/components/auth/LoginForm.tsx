@@ -64,7 +64,7 @@ export default function LoginForm() {
         value={password}
         onChange={setPassword}
         icon={IoLockClosedOutline}
-        placeholder="Nhập mật khẩu"
+        placeholder="Nhập mật khẩu của bạn"
         autoComplete="current-password"
         disabled={submitting}
       />

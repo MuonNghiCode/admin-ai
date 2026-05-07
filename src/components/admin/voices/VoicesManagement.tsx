@@ -122,7 +122,7 @@ export default function VoicesManagement() {
   return (
     <div className="space-y-7">
       <AdminPageHeader 
-        badge="Voice Catalog"
+        badge="Danh mục giọng nói"
         title="Quản lý Voice Catalog"
         description="Quản lý danh sách các giọng nói được hỗ trợ trong hệ thống (GCP, ElevenLabs)."
         stats={[{ label: "tổng số giọng", value: voices.length }]}
@@ -158,7 +158,7 @@ export default function VoicesManagement() {
                       </div>
                       <div className="text-left flex-1">
                         <p className="text-sm font-black text-gray-900">{v.name}</p>
-                        <p className="text-[11px] text-gray-400 font-bold uppercase">{v.provider} • {v.voiceId} • {v.isPremium ? "Premium" : "Free"}</p>
+                        <p className="text-[11px] text-gray-400 font-bold uppercase">{v.provider} • {v.voiceId} • {v.isPremium ? "Cao cấp" : "Miễn phí"}</p>
                       </div>
                     </button>
                   ))}
@@ -171,7 +171,7 @@ export default function VoicesManagement() {
                   <div className="rounded-2xl bg-gray-50 p-6 space-y-4 border border-gray-100">
                     <div className="space-y-3">
                        <div>
-                         <p className="text-[10px] font-black text-gray-400 uppercase">Provider ID</p>
+                         <p className="text-[10px] font-black text-gray-400 uppercase">Mã nhà cung cấp (ID)</p>
                          <p className="text-sm font-mono font-bold text-gray-800 break-all">{selected.voiceId}</p>
                        </div>
                        <div>
@@ -185,7 +185,7 @@ export default function VoicesManagement() {
                        <div>
                          <p className="text-[10px] font-black text-gray-400 uppercase">Loại giọng</p>
                          <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${selected.isPremium ? 'bg-amber-100 text-amber-700' : 'bg-gray-200 text-gray-700'}`}>
-                           {selected.isPremium ? 'Premium (Pro)' : 'Free (Standard)'}
+                           {selected.isPremium ? 'Cao cấp (Pro)' : 'Miễn phí (Standard)'}
                          </span>
                        </div>
                     </div>
@@ -246,8 +246,8 @@ export default function VoicesManagement() {
             </label>
             <label className={labelCls}>Loại giọng
                <select value={formData.isPremium ? "true" : "false"} onChange={e => setFormData({ ...formData, isPremium: e.target.value === "true" })} className={fieldCls}>
-                 <option value="false">Free (Standard)</option>
-                 <option value="true">Premium (Pro)</option>
+                 <option value="false">Miễn phí (Standard)</option>
+                 <option value="true">Cao cấp (Pro)</option>
                </select>
             </label>
           </div>

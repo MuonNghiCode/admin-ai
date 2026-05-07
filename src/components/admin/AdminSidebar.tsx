@@ -15,6 +15,7 @@ import {
   MdSupervisedUserCircle,
   MdSecurity,
   MdRecordVoiceOver,
+  MdOutlineToken,
 } from "react-icons/md";
 import { GiBearFace } from "react-icons/gi";
 import { useAdminPrefs } from "@/contexts/AdminPreferencesContext";
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { icon: MdLibraryMusic, label: "Âm nhạc", href: "/admin/songs" },
   { icon: MdMenuBook, label: "Truyện", href: "/admin/stories" },
   { icon: MdRecordVoiceOver, label: "Giọng đọc mẫu", href: "/admin/voices" },
+  { icon: MdOutlineToken, label: "Hạn mức ElevenLabs", href: "/admin/elevenlabs" },
   { icon: MdSupervisedUserCircle, label: "Người dùng", href: "/admin/users" },
   { icon: MdSecurity, label: "An toàn AI", href: "/admin/safety" },
 ];

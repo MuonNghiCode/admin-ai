@@ -42,13 +42,13 @@ export default function AuthCard() {
     <div className="w-full max-w-xl">
       <div className="field-item mb-8 space-y-4">
         <p className="text-xs font-black uppercase tracking-[0.28em] text-[#17409A]/70">
-          Admin Authentication
+          Xác thực quản trị
         </p>
         <h1 className="text-4xl font-black leading-tight text-[#17409A] sm:text-5xl">
           Đăng nhập hệ thống quản trị
         </h1>
         <p className="max-w-lg text-sm leading-7 text-[#6B7280] sm:text-base">
-          Phiên truy cập mới luôn bắt đầu từ trạng thái sạch để bảo vệ dữ liệu
+          Phiên truy cập mới luôn bắt đầu từ trạng thái sạch để bảo vệ dữ liệu 
           quản trị và giữ trải nghiệm đăng nhập nhất quán.
         </p>
       </div>

@@ -15,8 +15,8 @@ import CrudWorkspaceTabs, {
 } from "@/components/admin/shared/CrudWorkspaceTabs";
 
 const ROLE_OPTIONS = [
-  { label: "Master (1)", value: 1 },
-  { label: "User (2)", value: 2 },
+  { label: "Quản trị (1)", value: 1 },
+  { label: "Người dùng (2)", value: 2 },
 ];
 
 const PROVIDER_TONE: Record<string, string> = {
@@ -150,7 +150,7 @@ export default function UsersManagement() {
                             <p className="text-[11px] text-[#9CA3AF] truncate">{user.email}</p>
                           </div>
                           <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${provTone}`}>
-                            {user.provider || "Local"}
+                            {user.provider || "Nội bộ"}
                           </span>
                         </button>
                       );
@@ -179,9 +179,9 @@ export default function UsersManagement() {
 
                     <div className="space-y-2 pt-2 border-t border-[#F0F2F8]">
                       {[
-                        { label: "Nhà cung cấp", value: selected.provider || "Local" },
-                        { label: "Vai trò", value: `Role ${selected.roleId}` },
-                        { label: "Smart Candies", value: `${selected.smartCandies} kẹo` },
+                        { label: "Nhà cung cấp", value: selected.provider || "Nội bộ" },
+                        { label: "Vai trò", value: `Vai trò ${selected.roleId}` },
+                        { label: "Kẹo thông minh", value: `${selected.smartCandies} kẹo` },
                         { label: "Ngày tạo", value: new Date(selected.createdAt).toLocaleDateString("vi-VN") },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex justify-between py-2 border-b border-[#F0F2F8] last:border-0">

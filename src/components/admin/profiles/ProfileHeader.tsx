@@ -16,9 +16,9 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   return (
     <AdminPageHeader
-      badge="Profile Center"
+      badge="Trung tâm Hồ sơ"
       title="Quản lý hồ sơ bé bằng một luồng trực quan, đồng bộ."
-      description="Danh sách profile, subscription, safety và personalization được gom trong cùng một trải nghiệm quản trị premium, nhất quán từ mobile đến desktop."
+      description="Danh sách hồ sơ, gói dịch vụ, an toàn và cá nhân hóa được gom trong cùng một trải nghiệm quản trị cao cấp, nhất quán từ di động đến máy tính."
       stats={[
         { label: "Tổng hồ sơ", value: total },
         { label: "Đang hoạt động", value: activeCount },

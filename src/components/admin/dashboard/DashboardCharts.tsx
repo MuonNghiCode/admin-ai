@@ -32,7 +32,7 @@ function CircleChart({ value, total }: { value: number; total: number }) {
           </text>
         </svg>
         <div>
-          <p className="text-sm text-[#6B7280]">{value.toLocaleString("vi-VN")} / {total.toLocaleString("vi-VN")} users</p>
+          <p className="text-sm text-[#6B7280]">{value.toLocaleString("vi-VN")} / {total.toLocaleString("vi-VN")} người dùng</p>
           <p className="mt-2 text-xs text-[#9CA3AF]">Thành viên gói Premium trên tổng người dùng</p>
         </div>
       </div>
@@ -90,7 +90,7 @@ function Sparkline({ points }: { points: number[] }) {
           strokeLinejoin="round"
         />
       </svg>
-      <p className="mt-2 text-xs text-[#6B7280]">Dư liệu xu hướng dựa trên các chỉ số đơn hàng, phiên và doanh thu hiện tại.</p>
+      <p className="mt-2 text-xs text-[#6B7280]">Dữ liệu xu hướng dựa trên các chỉ số đơn hàng, phiên và doanh thu hiện tại.</p>
     </div>
   );
 }

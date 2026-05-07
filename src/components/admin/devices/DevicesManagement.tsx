@@ -45,6 +45,13 @@ const STATUS_TONE: Record<string, string> = {
   ReadyToPair: "text-[#FF8C42] bg-[#FF8C42]/10",
 };
 
+const STATUS_LABEL: Record<string, string> = {
+  Active: "Hoạt động",
+  Inactive: "Không hoạt động",
+  Online: "Trực tuyến",
+  ReadyToPair: "Chờ kết nối",
+};
+
 export default function DevicesManagement() {
   const [devices, setDevices] = useState<DeviceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -289,7 +296,7 @@ export default function DevicesManagement() {
                         <span
                           className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${tone}`}
                         >
-                          {device.status}
+                          {STATUS_LABEL[device.status] ?? device.status}
                         </span>
                       </button>
                     );
@@ -394,7 +401,7 @@ export default function DevicesManagement() {
       >
         <div className="space-y-5">
           <label className={labelCls}>
-            Device ID
+            Mã thiết bị (Device ID)
             <input
               value={form.deviceId}
               onChange={(e) =>
@@ -432,10 +439,10 @@ export default function DevicesManagement() {
               }
               className={fieldCls}
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Online">Online</option>
-              <option value="ReadyToPair">ReadyToPair</option>
+              <option value="Active">Hoạt động (Active)</option>
+              <option value="Inactive">Không hoạt động (Inactive)</option>
+              <option value="Online">Trực tuyến (Online)</option>
+              <option value="ReadyToPair">Chờ kết nối (ReadyToPair)</option>
             </select>
           </label>
           <button
