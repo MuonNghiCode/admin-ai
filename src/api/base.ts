@@ -37,7 +37,7 @@ class BaseApiService {
         };
     }
 
-    constructor(baseURL: string = API_BASE_URL) {
+    constructor(baseURL: string = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL || "") {
         this.api = axios.create({
             baseURL,
             withCredentials: false,
