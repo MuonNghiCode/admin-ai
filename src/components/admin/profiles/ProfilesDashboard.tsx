@@ -13,6 +13,7 @@ import ProfileWorkspaceTabs, {
   type ProfileWorkspaceTab,
 } from "./ProfileWorkspaceTabs";
 import AdminLoadingSkeleton from "@/components/admin/shared/AdminLoadingSkeleton";
+import AdminDeleteModal from "@/components/admin/shared/AdminDeleteModal";
 
 export default function ProfilesDashboard() {
   const [profiles, setProfiles] = useState<ProfileSummary[]>([]);
@@ -22,6 +23,7 @@ export default function ProfilesDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<ProfileWorkspaceTab>("list");
   const [recommendationText, setRecommendationText] = useState<string | null>(
     null,
@@ -34,7 +36,7 @@ export default function ProfilesDashboard() {
   );
 
   const activeCount = profiles.filter(
-    (profile) => profile.subscriptionStatus === 1,
+    (profile) => profile.subscriptionStatus === 2,
   ).length;
   const hasSelection = !!selectedProfile;
 
@@ -114,9 +116,7 @@ export default function ProfilesDashboard() {
 
   const handleDelete = async () => {
     if (!selectedProfile) return;
-    const shouldDelete = window.confirm(`Xóa profile ${selectedProfile.name}?`);
-    if (!shouldDelete) return;
-
+    
     setSaving(true);
     try {
       const response = await profileService.remove(selectedProfile.id);
@@ -138,6 +138,7 @@ export default function ProfilesDashboard() {
       showError("Xóa profile thất bại", message);
     } finally {
       setSaving(false);
+      setIsDeleting(false);
     }
   };
 
@@ -260,7 +261,7 @@ export default function ProfilesDashboard() {
               <ProfileDetails
                 profile={selectedProfile}
                 onEdit={openEdit}
-                onDelete={() => void handleDelete()}
+                onDelete={() => setIsDeleting(true)}
                 onUpdateSubscription={(planId) => void handleUpdateSubscription(planId)}
                 onGenerateRecommendation={() => void handleGenerateRecommendation()}
                 recommending={recommending}
@@ -293,6 +294,15 @@ export default function ProfilesDashboard() {
       />
 
       <AppToast toast={toast} onClose={closeToast} />
+
+      <AdminDeleteModal
+        isOpen={isDeleting}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={handleDelete}
+        itemName={selectedProfile?.name ?? ""}
+        description="Bạn có chắc chắn muốn xóa hồ sơ"
+        isSaving={saving}
+      />
     </div>
   );
 }

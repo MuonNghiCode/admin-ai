@@ -74,16 +74,14 @@ export default function ProfilesList({
                   <p className={`text-sm font-black truncate ${active ? "text-[#17409A]" : "text-[#1A1A2E]"}`}>
                     {profile.name}
                   </p>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ${tone}`}>
-                    {statusLabel[profile.subscriptionStatus] ?? "Không rõ"}
-                  </span>
+                  {profile.subscriptionStatus !== 1 && (
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ${tone}`}>
+                      {statusLabel[profile.subscriptionStatus] ?? "Không rõ"}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 mt-0.5 text-[11px] text-[#9CA3AF]">
                   <span>{profile.gender} · {profile.age} tuổi</span>
-                  <span className="flex items-center gap-1">
-                    <MdModeNight className="text-xs" />
-                    {profile.currentMode}
-                  </span>
                   <span className="flex items-center gap-1">
                     <MdStar className="text-xs text-[#FFD93D]" />
                     {profile.dailyCandyBalance}

@@ -9,6 +9,7 @@ import AdminPageHeader from "@/components/admin/shared/AdminPageHeader";
 import AdminLoadingSkeleton from "@/components/admin/shared/AdminLoadingSkeleton";
 import CrudWorkspaceTabs, { type CrudTab } from "@/components/admin/shared/CrudWorkspaceTabs";
 import CrudEditorDrawer from "@/components/admin/shared/CrudEditorDrawer";
+import AdminDeleteModal from "@/components/admin/shared/AdminDeleteModal";
 import type { DemoVoiceItem, DemoVoiceUpsertRequest } from "@/types";
 
 export default function VoicesManagement() {
@@ -18,6 +19,7 @@ export default function VoicesManagement() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CrudTab>("list");
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState<DemoVoiceUpsertRequest>({
@@ -99,7 +101,6 @@ export default function VoicesManagement() {
 
   const handleDelete = async () => {
     if (!selected) return;
-    if (!confirm(`Xóa giọng "${selected.name}"?`)) return;
     setSaving(true);
     try {
       const res = await adminService.deleteVoice(selected.id);
@@ -111,6 +112,7 @@ export default function VoicesManagement() {
       showError("Lỗi", e instanceof Error ? e.message : "Không xác định");
     } finally {
       setSaving(false);
+      setIsDeleting(false);
     }
   };
 
@@ -196,7 +198,7 @@ export default function VoicesManagement() {
                         <MdEdit /> Chỉnh sửa
                       </button>
                       <button 
-                        onClick={() => void handleDelete()} 
+                        onClick={() => setIsDeleting(true)} 
                         disabled={saving}
                         className="flex items-center justify-center gap-2 py-2 rounded-xl border border-red-200 text-red-500 text-xs font-black hover:bg-red-50 transition-colors"
                       >
@@ -260,6 +262,15 @@ export default function VoicesManagement() {
       </CrudEditorDrawer>
 
       <AppToast toast={toast} onClose={closeToast} />
+
+      <AdminDeleteModal
+        isOpen={isDeleting}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={handleDelete}
+        itemName={selected?.name ?? ""}
+        description="Bạn có chắc chắn muốn xóa giọng mẫu"
+        isSaving={saving}
+      />
     </div>
   );
 }

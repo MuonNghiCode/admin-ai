@@ -101,11 +101,13 @@ export default function ProfileDetails({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-lg font-black text-[#1A1A2E]">{profile.name}</p>
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${STATUS_TONE[profile.subscriptionStatus] ?? "text-[#9CA3AF] bg-[#F4F7FF]"}`}
-                >
-                  {STATUS_LABEL[profile.subscriptionStatus] ?? "Không rõ"}
-                </span>
+                {profile.subscriptionStatus !== 1 && (
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${STATUS_TONE[profile.subscriptionStatus] ?? "text-[#9CA3AF] bg-[#F4F7FF]"}`}
+                  >
+                    {STATUS_LABEL[profile.subscriptionStatus] ?? "Không rõ"}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-[#9CA3AF] mt-0.5 truncate">{profile.id}</p>
             </div>
@@ -136,7 +138,6 @@ export default function ProfileDetails({
             {[
               { icon: <MdChildCare />, label: "Tuổi", value: `${profile.age} tuổi`, color: "#17409A" },
               { icon: <MdPerson />, label: "Giới tính", value: profile.gender === "Nu" ? "Nữ" : "Nam", color: "#FF6B9D" },
-              { icon: <GiBearFace />, label: "Chế độ", value: profile.currentMode, color: "#7C5CFC" },
               { icon: <MdStar />, label: "Kẹo hôm nay", value: `${profile.dailyCandyBalance} kẹo`, color: "#FF8C42" },
               { icon: <MdAccessTime />, label: "Hết hạn", value: profile.subscriptionEndUtc ?? "Không giới hạn", color: "#4ECDC4" },
             ].map(({ icon, label, value, color }) => (
@@ -155,25 +156,6 @@ export default function ProfileDetails({
             ))}
           </div>
 
-          {/* Subscription plan buttons */}
-          <div className="pt-2 border-t border-[#F0F2F8]">
-            <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-[#9CA3AF]">
-              Đổi gói đăng ký
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3].map((planId) => (
-                <button
-                  key={planId}
-                  type="button"
-                  onClick={() => onUpdateSubscription(planId)}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-[#17409A]/20 py-2.5 text-xs font-black text-[#17409A] transition-colors hover:bg-[#17409A] hover:text-white hover:border-[#17409A]"
-                >
-                  <MdWorkspacePremium className="text-sm" />
-                  Gói {planId}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* AI Recommendation */}
           <div className="border-t border-[#F0F2F8] pt-4">

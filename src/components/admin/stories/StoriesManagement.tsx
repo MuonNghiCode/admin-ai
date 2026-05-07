@@ -8,6 +8,7 @@ import AppToast from "@/components/ui/AppToast";
 import { useToast } from "@/hooks/useToast";
 import AdminPageHeader from "@/components/admin/shared/AdminPageHeader";
 import AdminLoadingSkeleton from "@/components/admin/shared/AdminLoadingSkeleton";
+import AdminDeleteModal from "@/components/admin/shared/AdminDeleteModal";
 import CrudEditorDrawer from "@/components/admin/shared/CrudEditorDrawer";
 import CrudWorkspaceTabs, {
   type CrudTab,
@@ -32,6 +33,7 @@ export default function StoriesManagement() {
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
   const [form, setForm] = useState<StoryUpsertRequest>(emptyStory());
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast, showError, showSuccess, closeToast } = useToast();
 
   const selected = useMemo(() => stories.find((item) => item.id === selectedId) ?? null, [stories, selectedId]);
@@ -101,7 +103,6 @@ export default function StoriesManagement() {
 
   const deleteStory = async () => {
     if (!selected) return;
-    if (!window.confirm(`Xóa truyện "${selected.name}"?`)) return;
     setSaving(true);
     try {
       const res = await adminService.deleteStory(selected.id);
@@ -114,6 +115,7 @@ export default function StoriesManagement() {
       showError("Xóa thất bại", error instanceof Error ? error.message : "Lỗi không xác định");
     } finally {
       setSaving(false);
+      setIsDeleting(false);
     }
   };
 
@@ -212,7 +214,7 @@ export default function StoriesManagement() {
                       className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#17409A] py-2.5 text-xs font-black text-[#17409A] hover:bg-[#17409A] hover:text-white transition-colors">
                       <MdEdit className="text-sm" /> Chỉnh sửa
                     </button>
-                    <button type="button" onClick={() => void deleteStory()} disabled={saving}
+                    <button type="button" onClick={() => setIsDeleting(true)} disabled={saving}
                       className="flex flex-1 items-center justify-center rounded-xl border border-[#FF6B9D] py-2.5 text-xs font-black text-[#FF6B9D] hover:bg-[#FF6B9D] hover:text-white transition-colors disabled:opacity-50">
                       Xóa
                     </button>
@@ -269,6 +271,15 @@ export default function StoriesManagement() {
       </CrudEditorDrawer>
 
       <AppToast toast={toast} onClose={closeToast} />
+
+      <AdminDeleteModal
+        isOpen={isDeleting}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={deleteStory}
+        itemName={selected?.name ?? ""}
+        description="Bạn có chắc chắn muốn xóa truyện"
+        isSaving={saving}
+      />
     </div>
   );
 }
