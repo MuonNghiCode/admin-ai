@@ -1,9 +1,7 @@
 export const API_BASE_URL =
   typeof window !== "undefined"
     ? ""
-    : (typeof process !== "undefined" &&
-        (process.env.BACKEND_API_BASE_URL ||
-          process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL)) ||
+    : (typeof process !== "undefined" && process.env.BACKEND_API_BASE_URL) ||
       "http://localhost:7017";
 
 export const API_ENDPOINTS = {
@@ -21,7 +19,8 @@ export const API_ENDPOINTS = {
     STATS: "/api/Admin/stats",
     PROFILES: "/api/Admin/profiles",
     PROFILE_BY_ID: (id: string) => `/api/Admin/profiles/${id}`,
-    PROFILE_SUBSCRIPTION: (id: string) => `/api/Admin/profiles/${id}/subscription`,
+    PROFILE_SUBSCRIPTION: (id: string) =>
+      `/api/Admin/profiles/${id}/subscription`,
     PROFILE_LEARNING_RECOMMENDATION: (id: string) =>
       `/api/Admin/profiles/${id}/learning-recommendation`,
     DEVICES: "/api/Admin/devices",

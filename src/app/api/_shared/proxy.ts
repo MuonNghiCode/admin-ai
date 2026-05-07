@@ -5,11 +5,7 @@ import type { ApiResponse } from "@/types";
 type ProxyTarget = "admin" | "auth" | "profiles";
 
 function resolveBackendBaseUrl() {
-  return (
-    process.env.BACKEND_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ||
-    "http://localhost:7017"
-  );
+  return process.env.BACKEND_API_BASE_URL || "http://localhost:7017";
 }
 
 function extractDescription(payload: unknown, status: number, rawText: string) {
@@ -39,10 +35,16 @@ function extractDescription(payload: unknown, status: number, rawText: string) {
     return rawText.slice(0, 600);
   }
 
-  return status >= 500 ? "Backend internal server error" : "Proxy request failed";
+  return status >= 500
+    ? "Backend internal server error"
+    : "Proxy request failed";
 }
 
-function wrap<T>(payload: unknown, status: number, rawText: string): ApiResponse<T> {
+function wrap<T>(
+  payload: unknown,
+  status: number,
+  rawText: string,
+): ApiResponse<T> {
   if (
     payload &&
     typeof payload === "object" &&
