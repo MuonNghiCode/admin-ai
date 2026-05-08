@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MdEdit, MdRefresh, MdSave, MdToken, MdCheck } from "react-icons/md";
+import { MdEdit, MdRefresh, MdSave, MdCheck } from "react-icons/md";
 import { adminService } from "@/services/admin.service";
 import type { DeviceItem, DeviceUpsertRequest } from "@/types";
 import AppToast from "@/components/ui/AppToast";
@@ -57,8 +57,6 @@ export default function DevicesManagement() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [tokenId, setTokenId] = useState("");
-  const [issuedToken, setIssuedToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<CrudTab>("list");
   const [drawerMode, setDrawerMode] = useState<"create" | "edit" | null>(null);
   const [form, setForm] = useState<DeviceUpsertRequest>(emptyDevice());
@@ -160,42 +158,6 @@ export default function DevicesManagement() {
     }
   };
 
-  const issueToken = async () => {
-    if (!selected) return;
-    try {
-      const res = await adminService.issueDeviceToken(selected.deviceId);
-      if (res.isFailure || !res.value)
-        throw new Error(res.error?.description || "Phát token thất bại");
-      setIssuedToken(res.value.token);
-      showSuccess("Token mới đã tạo", `TokenId: ${res.value.tokenId}`);
-    } catch (error) {
-      showError(
-        "Phát token thất bại",
-        error instanceof Error ? error.message : "Lỗi không xác định",
-      );
-    }
-  };
-
-  const revokeToken = async () => {
-    if (!selected || !tokenId.trim()) return;
-    try {
-      const res = await adminService.revokeDeviceToken(
-        selected.deviceId,
-        tokenId.trim(),
-      );
-      if (res.isFailure)
-        throw new Error(res.error?.description || "Thu hồi token thất bại");
-      showSuccess("Đã thu hồi token", tokenId.trim());
-      setTokenId("");
-      setIssuedToken(null);
-    } catch (error) {
-      showError(
-        "Thu hồi token thất bại",
-        error instanceof Error ? error.message : "Lỗi không xác định",
-      );
-    }
-  };
-
   const fieldCls =
     "w-full rounded-xl border border-[#E5E7EB] bg-[#F4F7FF] px-4 py-2.5 text-sm text-[#1A1A2E] outline-none focus:border-[#17409A] focus:ring-2 focus:ring-[#17409A]/10 transition-all";
   const labelCls =
@@ -206,7 +168,7 @@ export default function DevicesManagement() {
       <AdminPageHeader
         badge="Thiết bị"
         title="Quản trị thiết bị thông minh"
-        description="Tạo mới, chỉnh sửa, xóa và phát token xác thực cho các thiết bị gấu SmartBear."
+        description="Tạo mới, chỉnh sửa, xóa cho các thiết bị gấu SmartBear."
         stats={[
           { label: "tổng thiết bị", value: devices.length },
           { label: "đang hoạt động", value: activeCount },
@@ -342,45 +304,6 @@ export default function DevicesManagement() {
                     </button>
                   </div>
 
-                  {/* Token section */}
-                  <div className="pt-4 border-t border-[#F0F2F8] space-y-3">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#9CA3AF]">
-                      Quản lý token
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => void issueToken()}
-                      className="flex items-center gap-2 rounded-xl bg-[#FF8C42]/10 px-4 py-2.5 text-xs font-black text-[#FF8C42] hover:bg-[#FF8C42] hover:text-white transition-colors"
-                    >
-                      <MdToken className="text-sm" /> Phát token mới
-                    </button>
-                    {issuedToken && (
-                      <div className="rounded-xl bg-[#F4F7FF] p-3">
-                        <p className="text-[10px] font-black text-[#9CA3AF] mb-1">
-                          Token
-                        </p>
-                        <p className="text-xs break-all font-mono text-[#1A1A2E]">
-                          {issuedToken}
-                        </p>
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <input
-                        value={tokenId}
-                        onChange={(e) => setTokenId(e.target.value)}
-                        placeholder="Nhập Token ID để thu hồi"
-                        className="flex-1 rounded-xl border border-[#E5E7EB] bg-[#F4F7FF] px-3 py-2 text-xs outline-none focus:border-[#17409A] transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => void revokeToken()}
-                        disabled={!tokenId.trim()}
-                        className="rounded-xl border border-[#FF6B9D] px-3 py-2 text-xs font-black text-[#FF6B9D] disabled:opacity-40 hover:bg-[#FF6B9D] hover:text-white transition-colors"
-                      >
-                        Thu hồi
-                      </button>
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <p className="text-sm text-[#9CA3AF] py-6 text-center">
